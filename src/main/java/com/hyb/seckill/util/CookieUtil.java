@@ -30,12 +30,15 @@ public class CookieUtil {
         String retValue = null;
         try {
             for (int i = 0; i < cookieList.length; i++) {
-                if (isDecoder) {//如果需要解码则用URLDecoder.decode进行解码
-                    retValue = URLDecoder.decode(cookieList[i].getValue(), "UTF-8");
-                } else {
-                    retValue = cookieList[i].getValue();
+                if(cookieList[i].getName().equals(cookieName)){
+                    if (isDecoder) {//如果需要解码则用URLDecoder.decode进行解码
+                        retValue = URLDecoder.decode(cookieList[i].getValue(), "UTF-8");
+                    } else {
+                        retValue = cookieList[i].getValue();
+                    }
+                    break;
                 }
-                break;
+
 
             }
         } catch (UnsupportedEncodingException e) {
@@ -54,6 +57,7 @@ public class CookieUtil {
         String retValue = null;
         try {
             for (int i = 0; i < cookieList.length; i++) {
+
                 if (cookieList[i].getName().equals(cookieName)) {
                     retValue = URLDecoder.decode(cookieList[i].getValue(),
                             encodeString);

@@ -256,7 +256,9 @@
       },
       success: function (data) {
         if (data.code == 200) {
-          alert(data.message)
+          layer.msg("登录成功~")
+          // alert(data.message)
+          window.location.href = "/goods/toList";
         } else {
           alert(data.message)
         }

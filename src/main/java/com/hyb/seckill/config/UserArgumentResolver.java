@@ -5,6 +5,7 @@ import com.hyb.seckill.service.UserService;
 import com.hyb.seckill.util.CookieUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.MethodParameter;
+import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.support.WebDataBinderFactory;
 import org.springframework.web.context.request.NativeWebRequest;
@@ -19,7 +20,8 @@ import javax.servlet.http.HttpServletResponse;
  * @Date 2025/3/9 14:31
  * @Version 1.0
  */
-public class UserArgumentResolver implements HandlerMethodArgumentResolver {
+@Component
+public class UserArgumentResolver implements HandlerMethodArgumentResolver  {
 
     @Autowired
     private UserService userService;
@@ -29,8 +31,8 @@ public class UserArgumentResolver implements HandlerMethodArgumentResolver {
     @Override
     public boolean supportsParameter(MethodParameter parameter) {
         //获取参数是否是user类型
-        Class<?> aclass = parameter.getParameterType();
-        return aclass == User.class;
+        Class<?> aClass = parameter.getParameterType();
+        return aClass == User.class;
     }
 
     //类似拦截器 将传入的参数取出cookie值，然后获取User对象
@@ -39,12 +41,12 @@ public class UserArgumentResolver implements HandlerMethodArgumentResolver {
         HttpServletRequest request = webRequest.getNativeRequest(HttpServletRequest.class);
         HttpServletResponse response = webRequest.getNativeResponse(HttpServletResponse.class);
 
-        String userTicket = CookieUtil.getCookieValue(request, "userTicket");
+        String ticket  = CookieUtil.getCookieValue(request, "userTicket");
 
-        if(!StringUtils.hasText(userTicket)){
+        if(!StringUtils.hasText(ticket )){
             return null;
         }
         //根据cookie-ticket到Redis获取User
-        return userService.getUserByCookie(userTicket,request,response);
+        return userService.getUserByCookie(ticket,request,response);
     }
 }

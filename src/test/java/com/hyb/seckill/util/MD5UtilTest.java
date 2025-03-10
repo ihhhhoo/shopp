@@ -24,7 +24,7 @@ public class MD5UtilTest {
         //用户原生密码
         System.out.println(MD5Util.inputPassToMidPass("123456"));
         //4. midPassToDBPass() 方法通过中间密码 得到存在数据库的密码
-        System.out.println(MD5Util.midPassToDBPass("8227722ecbd8ef91940416dcfed0a051",
+        System.out.println(MD5Util.midPassToDBPass("75d7eacdc4a31d0c8c939112ae5880cf",
                         "UCmP7xHA"));
         //5. inputPassToDBPass 方法是通过用户原生密码,得到存在数据库的密码
         System.out.println(MD5Util.inputPassToDBPass("123456", "UCmP7xHA"));

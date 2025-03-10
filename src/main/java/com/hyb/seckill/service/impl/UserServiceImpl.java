@@ -48,20 +48,26 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         // }
         User user = userMapper.selectById(mobile);
         //查询数据库
-        // if(user == null){
-        //     // return RespBean.error(RespBeanEnum.MOBILE_NOT_EXIST);
-        //     //抛异常让全局处理
-        //     throw new GlobalException(RespBeanEnum.LOGIN_ERROR);
-        // }
-        // if(!MD5Util.inputPassToDBPass(password,user.getSlat()).equals(user.getPassword())){
-        //     return RespBean.error(RespBeanEnum.LOGIN_ERROR);
-        // }
+        if (null == user) {//说明用户不存在
+            //return RespBean.error(RespBeanEnum.LOGIN_ERROR);
+            throw new GlobalException(RespBeanEnum.LOGIN_ERROR);
+        }
+
+        //如果用户存在，则比对密码!!
+        //注意，我们从loginVo取出的密码是中间密码(即客户端经过一次加密加盐处理的密码)
+        if (!MD5Util.midPassToDBPass(password, user.getSlat()).equals(user.getPassword())) {
+            return RespBean.error(RespBeanEnum.LOGIN_ERROR);
+        }
+
+
         //生成cookie
         String ticket = UUIDUtil.uuid();
+        //为了实现分布式Session, 把登录的用户存放到Redis
+        System.out.println("使用的 redisTemplate->" + redisTemplate.hashCode());
         redisTemplate.opsForValue().set("user:" + ticket, user);
         CookieUtil.setCookie(request,response,"userTicket",ticket);
-
-        return RespBean.success();
+        //这里我们需要返回userTicket
+        return RespBean.success(ticket);
     }
 
     @Override
@@ -76,6 +82,25 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         }
         return user;
     }
+
+    @Override
+    public RespBean updatePassword(String userTicket, String password,
+                                   HttpServletRequest request, HttpServletResponse response) {
+            //更新用户密码, 同时删除用户在 Redis 的缓存对象
+        User user = getUserByCookie(userTicket, request, response);
+        if (user == null) {
+            throw new GlobalException(RespBeanEnum.MOBILE_NOT_EXIST);
+        }
+        user.setPassword(MD5Util.inputPassToDBPass(password, user.getSlat()));
+        int i = userMapper.updateById(user);
+        if (i == 1) {
+            //删除 redis
+            redisTemplate.delete("user:" + userTicket);
+            return RespBean.success();
+        }
+        return RespBean.error(RespBeanEnum.PASSWORD_UPDATE_FAIL);
+    }
+
 
 
 }

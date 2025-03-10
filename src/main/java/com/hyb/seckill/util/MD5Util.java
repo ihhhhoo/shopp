@@ -12,14 +12,14 @@ public class MD5Util {
     public static String md5(String src) {
         return DigestUtils.md5Hex(src);
     }
-    private static final String salt = "UCmP7xHA";//加盐
+    private static final String salt = "abcdefg";//加盐
     public static String inputPassToMidPass(String inputPass) {
-        String str = "" + salt.charAt(0) + salt.charAt(2) + inputPass + salt.charAt(5) + salt.charAt(4);
+        String str = "" + salt.charAt(0) + inputPass + salt.charAt(6);
         return md5(str);
     }
 
     //盐随机生成完成的是md5(md5(pass + salt1) + salt2)
-    public static String midPassToDBPass(String midPass,String salt) {
+    public static String midPassToDBPass(String midPass,String salt) {//盐abcdefgh
         String str = salt.charAt(1) + midPass + salt.charAt(5);
         return md5(str);
     }

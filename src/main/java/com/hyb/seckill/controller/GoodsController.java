@@ -4,18 +4,26 @@ import com.hyb.seckill.pojo.User;
 import com.hyb.seckill.service.GoodsService;
 import com.hyb.seckill.service.UserService;
 import com.hyb.seckill.vo.GoodsVo;
+import com.hyb.seckill.vo.RespBean;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.CookieValue;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseBody;
+import org.thymeleaf.context.WebContext;
+import org.thymeleaf.spring5.view.ThymeleafViewResolver;
 
+import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import java.util.Date;
+import java.util.concurrent.TimeUnit;
 
 /**
  * @Author hyb
@@ -32,16 +40,25 @@ public class GoodsController {
     @Autowired
     private GoodsService goodsService;
 
+    @Resource
+    private RedisTemplate redisTemplate;
+    //手动渲染
+    @Resource
+    private ThymeleafViewResolver thymeleafViewResolver;
+
     //跳转到商品列表页
-    @RequestMapping(value = "/toList")
-    public String toList(Model model, User user){
-        // //如果cookie没有生成ticket，则跳转到登录页
-        // if(!StringUtils.hasText(ticket)){
-        //     return "login";
-        // }
-        // // User user = (User)session.getAttribute(ticket);
-        // User user = userService.getUserByCookie(ticket,request,response);
-        //如果用户没有登录
+    @RequestMapping(value = "/toList", produces = "text/html;charset=utf-8")
+    @ResponseBody//使用了 redis 缓存页面需要添加
+    public String toList(Model model, User user,
+                         HttpServletRequest request,
+                         HttpServletResponse response){
+        //先从 redis 中获取页面，如果不为空，直接返回页面
+        ValueOperations valueOperations = redisTemplate.opsForValue();
+        String html = (String) valueOperations.get("goodsList");
+        if (StringUtils.hasText(html)) {
+            return html;
+        }
+
 
         if(user == null){
             return "login";
@@ -49,15 +66,32 @@ public class GoodsController {
         model.addAttribute("user",user);
         //展示商品
         model.addAttribute("goodsList", goodsService.findGoodsVo());
-        System.out.println("-------"+goodsService.findGoodsVo());
-        return "goodsList";
 
+        WebContext webContext = new WebContext(request, response,
+                request.getServletContext(), request.getLocale(), model.asMap());
+        html = thymeleafViewResolver.getTemplateEngine().process("goodsList", webContext);
+        if (StringUtils.hasText(html)) {
+            //每 60s 更新一次 redis 页面缓存, 即 60s 后, 该页面缓存失效, Redis 会清除该页面缓存
+            valueOperations.set("goodsList", html, 60, TimeUnit.SECONDS);
+        }
+        return html;
     }
 
 
     //跳转商品详情页面
-    @RequestMapping(value = "/toDetail/{goodsId}")
-    public String toDetail(Model model, User user, @PathVariable Long goodsId){
+    @RequestMapping(value = "/toDetail/{goodsId}",produces = "text/html;charset=utf-8")
+    @ResponseBody
+    public String toDetail(Model model, User user, @PathVariable Long goodsId,
+                           HttpServletRequest request,
+                           HttpServletResponse response){
+
+        //使用页面缓存
+        ValueOperations valueOperations = redisTemplate.opsForValue();
+        String html = (String) valueOperations.get("goodsDetail:" + goodsId);
+        if (StringUtils.hasText(html)) {
+            return html;
+        }
+
         model.addAttribute("user",user);
         GoodsVo goodsVo = goodsService.findGoodsVoByGoodsId(goodsId);
 
@@ -86,7 +120,20 @@ public class GoodsController {
         //============处理秒杀倒计时和状态 end ==============
 
         model.addAttribute("goods",goodsVo);
-        return "goodsDetail";
+        //如果为 null，手动渲染，存入 redis 中
+        WebContext webContext = new WebContext(request, response, request.getServletContext()
+                , request.getLocale(), model.asMap());
+        html = thymeleafViewResolver.getTemplateEngine()
+                .process("goodsDetail", webContext);
+        if (StringUtils.hasText(html)) {
+            //设置每 60s 更新一次缓存, 即 60s 后, 该页面缓存失效, Redis 会清除该页面缓存
+            valueOperations.set("goodsDetail:" +
+                    goodsId, html, 60, TimeUnit.SECONDS);
+        }
+        return html;
+
     }
+
+
 
 }

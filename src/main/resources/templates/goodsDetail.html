@@ -187,8 +187,9 @@ Image">
     countDown();
   });
   function countDown() {
+    //获得剩余时间
     var remainSeconds = $("#remainSeconds").val();
-    var timeout;
+    var timeout;//计时器
       //秒杀还未开始
     if (remainSeconds > 0) {
 
@@ -198,7 +199,7 @@ Image">
         $("#countDown").text(remainSeconds - 1);
         $("#remainSeconds").val(remainSeconds - 1);
         countDown();
-      }, 1000);
+      }, 1000);//每隔一秒钟调用方法
     } else if (remainSeconds == 0) {//秒杀进行中
       $("#buyButton").attr("disabled", false);
       if (timeout) {//清空计时器

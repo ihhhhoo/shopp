@@ -15,4 +15,10 @@ public interface OrderService extends IService<Order> {
     //秒杀
     Order seckill(User user, GoodsVo goodsVo);
 
+    //生成秒杀地址
+    String createPath(User user, Long goodsId);
+    //判断redis是否有秒杀地址
+    boolean checkPath(User user, Long goodsId, String path);
+
+
 }

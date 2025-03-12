@@ -79,9 +79,9 @@ mybatis-plus:
   mapper-locations: classpath*:/mapper/*Mapper.xml
 #配置 mybatis 数据返回类型别名
   type-aliases-package: com.hyb.seckill.pojo
-#mybatis sql 打印
-logging:
-  level:
-    com.hyb.seckill.mapper: debug
+##mybatis sql 打印
+#logging:
+#  level:
+#    com.hyb.seckill.mapper: debug
 server:
   port: 8080

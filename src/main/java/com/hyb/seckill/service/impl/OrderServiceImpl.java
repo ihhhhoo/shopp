@@ -1,5 +1,6 @@
 package com.hyb.seckill.service.impl;
 
+import ch.qos.logback.core.util.TimeUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
@@ -11,13 +12,17 @@ import com.hyb.seckill.pojo.User;
 import com.hyb.seckill.service.OrderService;
 import com.hyb.seckill.service.SeckillGoodsService;
 import com.hyb.seckill.service.SeckillOrderService;
+import com.hyb.seckill.util.MD5Util;
+import com.hyb.seckill.util.UUIDUtil;
 import com.hyb.seckill.vo.GoodsVo;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 
 import javax.annotation.Resource;
 import java.util.Date;
+import java.util.concurrent.TimeUnit;
 
 /**
  * @Author hyb
@@ -93,5 +98,24 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Order> implements
 
 
 
+    }
+
+    @Override
+    public String createPath(User user, Long goodsId) {
+        String str = MD5Util.md5(UUIDUtil.uuid());
+        redisTemplate.opsForValue().set("seckillPath:" + user.getId() +
+                ":" + goodsId,str,60, TimeUnit.SECONDS);
+        return str;
+    }
+
+    @Override
+    public boolean checkPath(User user, Long goodsId, String path) {
+        if (user == null || goodsId < 0 || !StringUtils.hasText(path)) {
+            return false;
+        }
+        //path 判断
+        String str = (String) redisTemplate.opsForValue().get("seckillPath:" +
+                user.getId() + ":" + goodsId);
+        return path.equals(str);
     }
 }

@@ -28,6 +28,12 @@ public enum RespBeanEnum {
     REQUEST_ILLEGAL(500503, "请求非法"),
     SESSION_ERROR(500502, "用户信息有误"),
     SEC_KILL_WAIT(500504, "排队中...."),
+
+    CAPTCHA_ERROR(500505, "验证码错误"),
+
+    //刷接口
+    ACCESS_LIMIT_REACHE(500506, "访问次数超限"),
+    SEC_KILL_RETRY(500507, "秒杀失败"),
     //秒杀模块
     ENTRY_STOCK(500500, "库存不足"),
     REPEAT_ERROR(500501, "该商品每人限购一件");

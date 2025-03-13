@@ -118,4 +118,15 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Order> implements
                 user.getId() + ":" + goodsId);
         return path.equals(str);
     }
+
+    @Override
+    public boolean checkCaptcha(User user, Long goodsId, String captcha) {
+        if(user == null || goodsId < 0 || !StringUtils.hasText(captcha)){
+            return false;
+        }
+        String redisCaptcha = (String)redisTemplate.opsForValue().
+                get("captcha:" + user.getId() + ":" + goodsId);
+
+        return captcha.equals(redisCaptcha);
+    }
 }

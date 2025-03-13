@@ -20,5 +20,8 @@ public interface OrderService extends IService<Order> {
     //判断redis是否有秒杀地址
     boolean checkPath(User user, Long goodsId, String path);
 
+    //验证用户输入的验证码是否正确
+    boolean checkCaptcha(User user, Long goodsId, String captcha);
+
 
 }

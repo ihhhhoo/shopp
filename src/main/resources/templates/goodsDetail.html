@@ -172,8 +172,8 @@ Image">
           <img id="captchaImg" class="captchaImg"/></td>
         <td>
           <input id="captcha" class="captchaImg"/>
-          <input type="button" id="captchabtn" onclick="verifyCaptcha()" value="验证
-输入的验证码是否正确">
+          <input type="button" id="captchabtn" onclick="verifyCaptcha()"
+                 value="验证输入的验证码是否正确">
         </td>
       </tr>
       <tr>
@@ -212,6 +212,14 @@ Image">
         clearTimeout(timeout);
       }
       $("#seckillTip").html("秒杀进行中");
+      //在秒杀进行中的状态下, 请求验证码,并显示(默认情况下该验证码图片是不显示的)
+      $("#captchaImg").attr("src", "/seckill/captcha?goodsId="
+              + $("#goodsId").val());
+      $("#captchaImg").show();
+    //显示输入框
+      $("#captcha").show();
+
+
     } else {
       $("#buyButton").attr("disabled", true);
       $("#seckillTip").html("秒杀已结束");
@@ -220,11 +228,14 @@ Image">
   //通过隐藏秒杀接口的方式,秒杀商品
   function getSecKillPath() {
     var goodsId = $("#goodsId").val();
+    //获取用户输入的验证码
+    var captcha = $("#captcha").val();
     $.ajax({
       url: "/seckill/path",//获得秒杀路径的方法
       type: "GET",
       data: {
         goodsId: goodsId,
+        captcha: captcha,
       },
       success: function (data) {
         if (data.code == 200) {

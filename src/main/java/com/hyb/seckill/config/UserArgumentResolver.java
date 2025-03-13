@@ -38,15 +38,16 @@ public class UserArgumentResolver implements HandlerMethodArgumentResolver  {
     //类似拦截器 将传入的参数取出cookie值，然后获取User对象
     @Override
     public Object resolveArgument(MethodParameter parameter, ModelAndViewContainer mavContainer, NativeWebRequest webRequest, WebDataBinderFactory binderFactory) throws Exception {
-        HttpServletRequest request = webRequest.getNativeRequest(HttpServletRequest.class);
-        HttpServletResponse response = webRequest.getNativeResponse(HttpServletResponse.class);
-
-        String ticket  = CookieUtil.getCookieValue(request, "userTicket");
-
-        if(!StringUtils.hasText(ticket )){
-            return null;
-        }
-        //根据cookie-ticket到Redis获取User
-        return userService.getUserByCookie(ticket,request,response);
+        // HttpServletRequest request = webRequest.getNativeRequest(HttpServletRequest.class);
+        // HttpServletResponse response = webRequest.getNativeResponse(HttpServletResponse.class);
+        //
+        // String ticket  = CookieUtil.getCookieValue(request, "userTicket");
+        //
+        // if(!StringUtils.hasText(ticket )){
+        //     return null;
+        // }
+        // //根据cookie-ticket到Redis获取User
+        // return userService.getUserByCookie(ticket,request,response);
+        return UserContext.getUser();
     }
 }

@@ -1,25 +1,30 @@
-import java.util.*;
+import java.math.BigInteger;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Scanner;
 
 public class Main {
 
     public static void main(String[] args) {
         Scanner sc = new Scanner(System.in);
         int n = sc.nextInt();
-        HashMap<String, ArrayList> map = new HashMap<>();
-        // List<String>[] list = new ArrayList[n];
-        HashMap<String, Integer> inMap = new HashMap<>();//入度
-        String[] arr = new String[n];
+        int[] arr = new int[n];
         for (int i = 0; i < n; i++) {
-            String str = sc.next();
-            // list[]
-            map.put(str, new ArrayList());
-            arr[i] = str;
+            arr[i] = sc.nextInt();
         }
-
-        Set<Map.Entry<String, ArrayList>> entries = map.entrySet();
-        for (Map.Entry<String, ArrayList> entry : entries) {
-
+        Arrays.sort(arr);
+        int index = 0;
+        long res = 1;
+        for (int i = 0; i < n; i++) {
+            int num = arr[i] - index++;
+            if(num <= 0){
+                System.out.println(0);
+                return;
+            }
+            res *= num;
+            res %= 1e9+7;
         }
+        System.out.println(res);
 
     }
 }
